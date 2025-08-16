@@ -37,8 +37,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
       return;
     }
 
-    await pool.query<Task>("UPDATE \"Tasks\" SET completed = $1 WHERE id = $2", [!task.completed, id])
+    const updatedTask = (await pool.query<Task>("UPDATE \"Tasks\" SET completed = $1 WHERE id = $2 RETURNING *", [!task.completed, id])).rows[0]
 
-    response.status(200).json(task);
+    response.status(200).json(updatedTask);
   }
 }
