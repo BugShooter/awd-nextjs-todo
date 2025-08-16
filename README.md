@@ -188,40 +188,50 @@ If you encounter any issues, check the following:
 
 ### Packages Auditing
 
-To ensure the security and stability of your application, it's important to regularly audit your project's dependencies. You can do this by running:
+To ensure the security and stability of your application, regularly audit your project's dependencies:
 
 ```bash
 npm audit
+npm run lint
 ```
 
-This command will check for known vulnerabilities in your dependencies and provide recommendations for fixing them.
+**Initial state:** When running `npm run lint`, encountered TypeScript version compatibility warnings and a disabled test warning, but no blocking errors.
+
+**Issue encountered:** When trying to update TypeScript ESLint packages to resolve version warnings:
+```bash
+npm install --save-dev @typescript-eslint/parser@latest @typescript-eslint/eslint-plugin@latest
+# ERESOLVE could not resolve - dependency conflicts
+```
+
+Found multiple conflicting versions from different sources when investigating with `npm ls`.
+
+**Solution:** Instead of forcing specific versions or using `--legacy-peer-deps` (which masks problems rather than solving them), let npm automatically resolve compatible versions:
+
+1. Install main config package first
+2. Let npm choose compatible versions for other packages
 
 ```bash
-$ npm ls form-data
-todo-app@0.1.0 /projects/nextjs-todo-sql
-└─┬ jest-environment-jsdom@29.7.0
-  └─┬ jsdom@20.0.3
-    └── form-data@4.0.4
+# Clean up conflicting dependencies
+npm uninstall @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-jest typescript-eslint
+rm -rf node_modules package-lock.json
+npm cache clean --force
 
-node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm install jest-environment-jsdom@latest --no-s
-ave 
-
-added 41 packages, removed 252 packages, changed 32 packages, and audited 1193 packages in 10s
-
-204 packages are looking for funding
-  run `npm fund` for details
-
-5 vulnerabilities (1 low, 3 moderate, 1 high)
-
-To address all issues, run:
-  npm audit fix
-
-Run `npm audit` for details.
+# Sequential installation - let npm resolve compatibility
+npm install --save-dev eslint-config-next@latest
+npm install --save-dev @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-jest
 ```
 
-### Check types
+**Result:**
+```bash
+npm run lint
+# ✔ No ESLint warnings or errors
+```
 
-Before we start refactoring, let's check the types in our project.
+All packages automatically resolved to compatible latest versions without conflicts.
+
+### Lint and TypeCheck Setup
+
+Running `npm run lint` produced TypeScript errors:
 
 ```bash
 node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm run check-types
@@ -237,22 +247,68 @@ pages/_app.tsx:12:14 - error TS2322: Type '{ children: string; jsx: true; global
 
 Found 1 error in pages/_app.tsx:12
 ```
-To fix this error, you need to install the `@types/styled-jsx` package, which provides TypeScript definitions for the `styled-jsx` library.
+TypeScript doesn't recognize styled-jsx syntax. To fix this error, you need to install the `@types/styled-jsx` package, which provides TypeScript definitions for the `styled-jsx` library.
 
 ```bash
-node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm install --save-dev @types/styled-jsx
-
-added 1 package, and audited 1346 packages in 10s
-
-219 packages are looking for funding
-  run `npm fund` for details
-
-found 0 vulnerabilities
-node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm run check-types
-
-> todo-app@0.1.0 check-types
-> tsc --noEmit
+npm install --save-dev @types/styled-jsx
 ```
+### Testing
+
+It's important to run tests before making any changes to the codebase. This helps catch any issues early and ensures that your application continues to function correctly after the migration.
+
+```bash
+npm run test
+```
+**Results:**
+```bash
+ PASS  components/Task/AddTaskInput.test.tsx (6.44 s)
+ PASS  components/Navigation/MenuContainer.test.tsx (7.44 s)
+ FAIL  components/TaskList/TaskList.test.tsx
+  ● Test suite failed to run
+
+    Cannot find module '../Task/functions/completedTask' from 'components/TaskList/TaskList.test.tsx'
+
+       8 | ];
+       9 |
+    > 10 | jest.mock("../Task/functions/completedTask");
+         |      ^
+      11 |
+      12 | describe("view a list of tasks", () => {
+      13 |   it("render the tasklist", () => {
+
+      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/index.js:863:11)
+      at Object.mock (components/TaskList/TaskList.test.tsx:10:6)
+
+ FAIL  tests/e2e/tests/e2e-test.spec.ts
+  ● Test suite failed to run
+
+    Playwright Test did not expect test.beforeEach() to be called here.
+    Most common reasons include:
+    - You are calling test.beforeEach() in a configuration file.
+    - You are calling test.beforeEach() in a file that is imported by the configuration file.
+    - You have two different versions of @playwright/test. This usually happens
+      when one of the dependencies in your package.json depends on @playwright/test.
+
+      3 | const { test, expect } = require("@playwright/test");
+      4 |
+    > 5 | test.beforeEach(async ({ page }: { page: Page }) => {
+        |      ^
+      6 |   await page.goto("https://tasktango.vercel.app/");
+      7 |   await expect(page).toHaveTitle("TaskTango - Home Page");
+      8 | });
+
+      at TestTypeImpl._currentSuite (node_modules/playwright/lib/common/testType.js:74:13)
+      at TestTypeImpl._hook (node_modules/playwright/lib/common/testType.js:159:24)
+      at Function.beforeEach (node_modules/playwright/lib/transform/transform.js:275:12)
+      at Object.beforeEach (tests/e2e/tests/e2e-test.spec.ts:5:6)
+
+Test Suites: 2 failed, 2 passed, 4 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        17.002 s
+Ran all test suites.
+```
+
 
 ## Exercise 1: Incremental Migration to Next.js App Router
 

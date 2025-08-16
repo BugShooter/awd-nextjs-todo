@@ -33,7 +33,7 @@ test("renders a dark mode toggle switch", () => {
   expect(darkToggle).toBeInTheDocument();
 });
 
-test.skip("renders a Fun mode toggle switch", () => {
+test("renders a Fun mode toggle switch", () => {
   render(<MenuContainer />);
   const funToggle: HTMLElement = screen.getByRole("checkbox", { name: /Fun Mode/i });
   expect(funToggle).toBeInTheDocument();

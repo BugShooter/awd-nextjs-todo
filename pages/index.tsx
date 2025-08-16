@@ -16,7 +16,7 @@ const IndexPage: FC = () => {
 
   useEffect(() => {
     setActiveList("TaskTango - Home Page");
-    tasks && setCountingTasks(tasks);
+    if(tasks) setCountingTasks(tasks);
   });
 
   if (!tasks) {

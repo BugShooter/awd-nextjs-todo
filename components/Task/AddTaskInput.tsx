@@ -27,7 +27,7 @@ export default function AddTaskInput({ afterSubmit }: AddTaskInputProps) {
 
       const inputElement = form.elements.namedItem('title') as HTMLInputElement;
 
-      inputElement && inputElement.focus();
+      if (inputElement) inputElement.focus();
 
       form.reset();
 

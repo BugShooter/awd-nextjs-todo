@@ -82,6 +82,8 @@ const TaskList: FC<TaskListProps> = ({ tasks }) => {
     
       mutate("/api/tasks");
     } catch (error) {
+      const message = (error as Error).message;
+      console.error("Error editing task:", message);
       mutate("/api/tasks");
     }
   };
