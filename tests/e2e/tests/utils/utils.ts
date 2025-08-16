@@ -1,3 +1,5 @@
+import { ElementHandle, Locator } from "@playwright/test";
+
 const TODO_ITEMS = [
   "book a doctors appointment",
   "Take a 10-minute walk around your neighborhood.",
@@ -27,3 +29,29 @@ function randomItem() {
 }
 
 export default randomItem;
+
+export async function debugLocator(locator: Locator, name: string) {
+  const count = await locator.count();
+  console.log(`🔍 [DEBUG] ${name} → found elements: ${count}`);
+  for (let i = 0; i < count; i++) {
+    const text = await locator.nth(i).textContent();
+    console.log(`   [${i}] textContent="${text?.trim()}"`);
+  }
+}
+
+export async function logElementsInfo(elements: ElementHandle[]) {
+  for (const el of elements) {
+    const info = await el.evaluate(async (node: Element) => {
+      const tagName = node.tagName;
+      const attrs: Record<string, string> = {};
+      for (let i = 0; i < node.attributes.length; i++) {
+        const attr = node.attributes[i];
+        attrs[attr.name] = attr.value;
+      }
+      const text = node.textContent?.trim() || "";
+      return { tagName, attrs, text };
+    });
+
+    console.log(info);
+  }
+}
