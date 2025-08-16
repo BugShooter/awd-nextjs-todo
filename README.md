@@ -355,6 +355,29 @@ Snapshots:   0 total
 Time:        13.574 s
 Ran all test suites.
 ```
+#### E2E Tests
+To use Playwright for E2E testing, you need to install the necessary dependencies.
+
+Install Playwright browsers and system dependencies:
+```bash
+sudo npx playwright install-deps
+npx playwright install chromium
+```
+
+Run E2E Tests:
+```bash
+npm run test:e2e
+```
+
+**Note:** In Ubuntu VS Code DevContainer, getByRole doesn't work correctly, so you need to use locator instead. It's unclear if this is related to Ubuntu specifically or the DevContainer environment.
+
+```typescript
+// Before (doesn't work in Ubuntu DevContainer)
+const newTaskInput: Locator = page.getByRole("textbox", { name: "add New Task" });
+
+// After (Ubuntu DevContainer compatible)
+const newTaskInput: Locator = page.locator('input[placeholder="Add new task"]').first();
+```
 
 ## Exercise 1: Incremental Migration to Next.js App Router
 

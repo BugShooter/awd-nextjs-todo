@@ -9,7 +9,11 @@
     "eslint": "next lint",
     "lint": "npm run eslint && npm run check-types",
     "check-types": "tsc --noEmit",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "test:e2e": "cd tests/e2e && npx playwright test",
+    "test:e2e:headed": "cd tests/e2e && npx playwright test --headed",
+    "test:e2e:ui": "cd tests/e2e && npx playwright test --ui",
+    "test:all": "npm run test:unit && npm run test:e2e"    
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
