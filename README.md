@@ -177,6 +177,7 @@ $ npm run dev
 Open your browser and navigate to `http://localhost:3000` to see your application in action.
 You should see the Todo application interface.
 
+
 ### Troubleshooting
 
 If you encounter any issues, check the following:
@@ -218,11 +219,46 @@ To address all issues, run:
 Run `npm audit` for details.
 ```
 
+### Check types
+
+Before we start refactoring, let's check the types in our project.
+
+```bash
+node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm run check-types
+
+> todo-app@0.1.0 check-types
+> tsc --noEmit
+
+pages/_app.tsx:12:14 - error TS2322: Type '{ children: string; jsx: true; global: true; }' is not assignable to type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>'.
+  Property 'jsx' does not exist on type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>'.
+
+12       <style jsx global>
+                ~~~
+
+Found 1 error in pages/_app.tsx:12
+```
+To fix this error, you need to install the `@types/styled-jsx` package, which provides TypeScript definitions for the `styled-jsx` library.
+
+```bash
+node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm install --save-dev @types/styled-jsx
+
+added 1 package, and audited 1346 packages in 10s
+
+219 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm run check-types
+
+> todo-app@0.1.0 check-types
+> tsc --noEmit
+```
+
 ## Exercise 1: Incremental Migration to Next.js App Router
 
 Instructions for migrating the application to the new App Router you can find in [INSTRUCTIONS](INSTRUCTIONS.md) file.
 The base commit for this exercise is tagged as `exercise/migration-to-app-router/start`.
 
-
+### Step 1
 
 
