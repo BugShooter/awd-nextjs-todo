@@ -309,6 +309,52 @@ Time:        17.002 s
 Ran all test suites.
 ```
 
+#### Separating Jest and E2E Tests
+
+**Issue**
+When running tests, Jest was attempting to execute E2E tests (Playwright), causing configuration conflicts:
+```
+Playwright Test did not expect test.beforeEach() to be called here.
+```
+
+**Solution**
+
+1. **Exclude E2E tests from Jest configuration** by adding to `jest.config.js`:
+  ```javascript
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/tests/e2e/'
+  ]
+  ```
+
+2. **Add separate scripts** to `package.json` for different test types:
+```json
+{
+  "scripts": {
+    "test": "jest",
+    "test:unit": "jest", 
+    "test:e2e": "cd tests/e2e && npx playwright test",
+    "test:all": "npm run test:unit && npm run test:e2e"
+  }
+}
+```
+
+3. Check test results
+
+```bash
+npm run test
+```
+
+**Result**
+
+```bash
+Test Suites: 3 passed, 3 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        13.574 s
+Ran all test suites.
+```
 
 ## Exercise 1: Incremental Migration to Next.js App Router
 
