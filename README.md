@@ -7,10 +7,9 @@ These exercises are based on Task Tango a simple to-do app with some basic "TODO
 
 [![TaskTango](https://github.com/uetrozi/uetrozi/assets/139115048/3b26e730-3468-439d-898e-8c619da2211d)](https://tasktango.vercel.app/)
 
-## Exercise 1: Incremental Migration to Next.js App Router
+## Getting Started
 
-Instructions for migrating the application to the new App Router you can find in [INSTRUCTIONS](INSTRUCTIONS.md) file.
-The base commit for this exercise is tagged as `exercise/migration-to-app-router/start`.
+In this section, you will learn how to set up and run the Next.js ToDo application in a development environment.
 
 ### Working in VSCode dev container
 
@@ -35,23 +34,23 @@ PostgreSQL 17.6 (Debian 17.6-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc
 The `-t` option is used to output only the version string without any additional formatting.
 The `-A` option is used to output the result without any column names or formatting.
 
-## Clone the repository
+### Clone the repository
 
 ```bash
 git clone --branch exercise/migration-to-app-router/start --single-branch https://github.com/BugShooter/awd-nextjs-todo.git nextjs-todo
 cd nextjs-todo
 ```
 
-## Install dependencies
+### Install dependencies
 
 ```bash
 npm install
 ```
 
-### Remove testing-library (Optional)
+### Re/provision testing-library (Optional)
 
 ```bash
-node ➜ /workspace/challenges/day-033/nextjs-todo-sql (release/02-sql) $ npm uninstall testing-library
+node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm uninstall testing-library
 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
 
@@ -71,7 +70,7 @@ To address all issues, run:
 Run `npm audit` for details.
 ```
 
-### Update next.js to the latest version
+### Update next.js to the latest version (Optional)
 
 ```bash
 npm install next@latest
@@ -94,9 +93,9 @@ To address all issues, run:
 Run `npm audit` for details.
 ```
 
-## Restore the database
+### Restore the database
 
-### Create .env.local
+#### Create .env.local
 
 Create a `.env.local` file in the root of the project and add the following environment variables:
 
@@ -107,7 +106,7 @@ PG_PASSWORD=todopassword
 PG_DATABASE=todo
 ```
 
-### Step 1: Delete the existing database and user (Optional)
+#### Step 1: Delete the existing database and user (Optional)
 
 ```bash
 bash <<'BASH'
@@ -123,7 +122,7 @@ psql -U postgres -d postgres -c "DROP ROLE IF EXISTS \"$PG_USER\";"
 BASH
 ```
 
-### Step 2: Create the database and user
+#### Step 2: Create the database and user
 ```bash
 bash <<'BASH'
 set -e
@@ -138,7 +137,7 @@ psql -U postgres -d postgres -c "CREATE DATABASE \"$PG_DATABASE\" OWNER \"$PG_US
 BASH
 ```
 
-### Step 3: Restore the database
+#### Step 3: Restore the database
 ```bash
 bash <<'BASH'
 set -e
@@ -160,7 +159,7 @@ echo "Done."
 BASH
 ```
 
-## Run and test
+### Run and test
 
 ```bash
 $ npm run dev
@@ -168,20 +167,62 @@ $ npm run dev
 > todo-app@0.1.0 dev
 > next dev
 
-   ▲ Next.js 14.0.4
+   ▲ Next.js 15.4.6
    - Local:        http://localhost:3000
    - Environments: .env.local
 
- ✓ Ready in 2.7s
+ ✓ Ready in 2.5s
 ```
 
 Open your browser and navigate to `http://localhost:3000` to see your application in action.
 You should see the Todo application interface.
 
-## Troubleshooting
+### Troubleshooting
 
 If you encounter any issues, check the following:
 
 - Ensure that your PostgreSQL server is running.
 - Verify your database connection settings in the `.env.local` file.
 - Check the terminal output for any error messages during the build or startup process.
+
+### Packages Auditing
+
+To ensure the security and stability of your application, it's important to regularly audit your project's dependencies. You can do this by running:
+
+```bash
+npm audit
+```
+
+This command will check for known vulnerabilities in your dependencies and provide recommendations for fixing them.
+
+```bash
+$ npm ls form-data
+todo-app@0.1.0 /projects/nextjs-todo-sql
+└─┬ jest-environment-jsdom@29.7.0
+  └─┬ jsdom@20.0.3
+    └── form-data@4.0.4
+
+node ➜ /projects/nextjs-todo-sql (release/02-sql) $ npm install jest-environment-jsdom@latest --no-s
+ave 
+
+added 41 packages, removed 252 packages, changed 32 packages, and audited 1193 packages in 10s
+
+204 packages are looking for funding
+  run `npm fund` for details
+
+5 vulnerabilities (1 low, 3 moderate, 1 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+```
+
+## Exercise 1: Incremental Migration to Next.js App Router
+
+Instructions for migrating the application to the new App Router you can find in [INSTRUCTIONS](INSTRUCTIONS.md) file.
+The base commit for this exercise is tagged as `exercise/migration-to-app-router/start`.
+
+
+
+
