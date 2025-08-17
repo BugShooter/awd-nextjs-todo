@@ -380,7 +380,7 @@ npm run test:e2e
 Instructions for migrating the application to the new App Router you can find in [INSTRUCTIONS](INSTRUCTIONS.md) file.
 The base commit for this exercise is tagged as `exercise/migration-to-app-router/start`.
 
-### Step 1
+### Step 1: refactoring of a done page
 
 Create an `app/done` folder and move `done.tsx` file from `pages` into `app/done/page.tsx` folder.
 
@@ -521,3 +521,104 @@ Run e2e tests to check that everything is working correctly:
 ```bash
 npm run test:e2e
 ```
+
+### Step 2: refactoring of a upcoming page
+
+```bash
+mkdir app/upcoming
+git mv app/done app/upcoming
+```
+
+Add "use client" at the top because it uses hooks (e.g., Zustand, SWR).
+Look at [General Approach for Determining When to Use "use client"](##general-approach-for-determining-when-to-use-use-client) section for more information.
+
+### Step 3: 404 (Not Found) Page
+
+
+## General Approach for Determining When to Use "use client"
+
+### Use "use client" when you have:
+
+1. React State Hooks:
+
+ - useState, useEffect, useContext, useReducer
+ - Third-party hooks: useSWR, useQuery, useStore
+
+2. Event Handlers:
+
+ - onClick, onChange, onSubmit, onFocus
+ - Any user interaction handling
+
+3. Browser APIs:
+
+ - localStorage, sessionStorage, cookies
+ - window, document, navigator
+ - DOM manipulation
+
+4. State Management Libraries:
+
+ - Zustand, Redux, Jotai, Valtio
+ - Context API with mutable state
+
+5. Client-side Data Fetching:
+
+ - Real-time updates, polling
+ - User-triggered requests
+ - Interactive data loading
+
+6. Dynamic UI Updates:
+
+ - Conditional rendering based on user actions
+ - Form validation and state
+ - Interactive components (modals, dropdowns)
+
+### Don't use "use client" when you have:
+
+1. Static Content Only:
+
+ - Pure markup without interactivity
+ - Static text, images, layouts
+
+2. Server-side Data Fetching:
+
+ - Initial data loading for SEO
+ - Database queries at build/request time
+
+3. Metadata and SEO:
+
+ - Page titles, descriptions
+ - Open Graph tags
+
+4. Server-only Operations:
+
+ - File system access
+ - Environment variables (server-side)
+ - Database connections
+
+### Hybrid Approach (Recommended):
+
+Split components into Server and Client parts:
+
+```tsx
+// page.tsx (Server Component)
+export default async function Page() {
+  const data = await fetchServerData();
+  return <ClientWrapper initialData={data} />;
+}
+
+// ClientWrapper.tsx (Client Component)
+"use client";
+export default function ClientWrapper({ initialData }) {
+  // All client-side logic here
+}
+```
+
+### Decision Checklist:
+Ask yourself:
+
+- Does this component need to respond to user interactions?
+- Does it manage local state that changes over time?
+- Does it use browser-specific APIs?
+- Does it need real-time updates or polling?
+
+If yes to any → use `"use client"` If no to all → keep as Server Component
