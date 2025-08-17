@@ -368,16 +368,12 @@ Run E2E Tests:
 ```bash
 npm run test:e2e
 ```
-
-**Note:** In Ubuntu VS Code DevContainer, getByRole doesn't work correctly, so you need to use locator instead. It's unclear if this is related to Ubuntu specifically or the DevContainer environment.
-
-```typescript
-// Before (doesn't work in Ubuntu DevContainer)
-const newTaskInput: Locator = page.getByRole("textbox", { name: "add New Task" });
-
-// After (Ubuntu DevContainer compatible)
-const newTaskInput: Locator = page.locator('input[placeholder="Add new task"]').first();
-```
+**Notes:**
+- Ensure that you use the right URL in your tests, for example `http://localhost:3000`
+- Ensure that you found only one input element to add a new task or use `first/last` functions.
+- Find the right container element for task list items.
+- Use `container.locator('li')` to find task items instead of role.
+- Ensure to use `filter({ hasText: todoText })` to target specific tasks.
 
 ## Exercise 1: Incremental Migration to Next.js App Router
 
@@ -386,4 +382,142 @@ The base commit for this exercise is tagged as `exercise/migration-to-app-router
 
 ### Step 1
 
+Create an `app/done` folder and move `done.tsx` file from `pages` into `app/done/page.tsx` folder.
 
+```bash
+mkdir -p app/done
+git mv pages/done.tsx app/done/page.tsx
+```
+
+If server is running, you can see that new layout file has been created:
+
+```bash
+ ⚠ Your page app/done/page.tsx did not have a root layout. We created app/layout.tsx for you.
+ ✓ Compiled in 11s (1835 modules)
+```
+
+If you check in browser localhost:3000/done, you should see that the done page don't styled correctly anymore.
+So we need move logic and styles from `pages/_app.tsx` to `app/layout.tsx`.
+Since `app/layout.tsx` is a server component by default, we can't use the `SWRConfig`,`ChakraProvider` and `<style jsx global>` component inside it because:
+- `ChakraProvider` and `SWRConfig` are client components that rely on React context, which is not available in server components.
+- `<style jsx global>` is a Next.js specific feature that only works in client components.
+
+To fix this, we can create a new client component that wraps  `SWRConfig`, `ChakraProvider`, and `<style jsx global>` components, and then use that client component in our layout.
+
+Create `providers/ChakraProvider.tsx` file:
+
+```tsx
+'use client';
+import { ChakraProvider as _ChakraProvider, theme } from "@chakra-ui/react";
+
+export const ChakraProvider = ({ children }: { children: React.ReactNode }) => {
+  return <_ChakraProvider theme={theme}>{children}</_ChakraProvider>;
+};
+```
+Create `providers/SWRProvider.tsx` file:
+
+```tsx
+'use client';
+import { SWRConfig } from "swr";
+
+const fetcher = (url: string): Promise<unknown> => fetch(url).then((response) => response.json());
+
+export const SWRProvider = ({ children }: { children: React.ReactNode }) => {
+  return <SWRConfig value={{ fetcher }}>{children}</SWRConfig>;
+};
+```
+
+Create `styles/GlobalStyles.tsx` file:
+
+```tsx
+// styles/GlobalStyles.tsx
+'use client'
+import { fonts } from "@/lib/fonts"
+
+export default function GlobalStyles() {
+  return (
+    <style jsx global>
+      {`
+        :root {
+          --font-rubik: ${fonts.rubik.style.fontFamily};
+        }
+        body, html {
+          height: 100%;
+        }
+      `}
+    </style>
+  )
+}
+```
+
+And make refactoring of `pages/_app.tsx` using created providers:
+
+```tsx
+// pages/_app.tsx
+import { AppProps } from 'next/app';
+import "@/styles/globals.css";
+import GlobalStyles from '@/styles/GlobalStyles';
+import { ChakraProvider } from '@/providers/chakra-provider';
+import { SWRProvider } from '@/providers/swr-provider';
+
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <GlobalStyles />
+      <ChakraProvider>
+        <SWRProvider>
+          <Component {...pageProps} />
+        </SWRProvider>
+      </ChakraProvider>
+    </>
+  );
+}
+```
+
+Apply changes to the `app/layout.tsx` file to use the new providers.
+
+```tsx
+// app/layout.tsx
+import "@/styles/globals.css";
+import GlobalStyles from '@/styles/GlobalStyles';
+import { SWRProvider } from "@/providers/swr-provider";
+import { ChakraProvider } from "@/providers/chakra-provider";
+
+export const metadata = {
+  title: 'TaskTango',
+  description: 'A simple to-do app',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <GlobalStyles />
+        <SWRProvider>
+          <ChakraProvider>
+            {children}
+          </ChakraProvider>
+        </SWRProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+Check in browser that the application is working correctly and the styles are applied as expected.
+
+Run unit tests to check that everything is working correctly:
+
+```bash
+npm run test
+```
+
+Run e2e tests to check that everything is working correctly:
+
+```bash
+npm run test:e2e
+```
